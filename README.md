@@ -1,4 +1,4 @@
-# rusted-content
+# frozen
 
 > Without binary files, the repo loads so fast...!
 
