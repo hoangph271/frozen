@@ -1,58 +1,46 @@
-use iced::button::{self, Button};
-use iced::{Alignment, Column, Element, Sandbox, Text};
+use iced::{executor, Application, Command, Element};
+
+mod lib;
+use lib::dom_parser::parse_dom;
 
 #[derive(Default)]
-struct Counter {
-    value: i32,
-    exit_button: button::State,
-    increment_pressed: button::State
-}
+struct Counter {}
 
-#[derive(Debug, Clone, Copy)]
-enum Message {
-    ExitPressed,
-    IncrementPressed,
-}
+const HTML: &str = "
+    <h4>Frozen</h4>
+    <quote>The content focused browser...!</quote>
+    <div>
+        There isn't any meaningful functionality for now...! :\"<
+    </div>
+";
 
-impl Sandbox for Counter {
-    type Message = Message;
-
-    fn new() -> Self {
-        Self::default()
-    }
+impl Application for Counter {
+    type Executor = executor::Default;
+    type Message = ();
+    type Flags = ();
 
     fn title(&self) -> String {
-        String::from("Frozen")
+        String::from("#Frozen")
     }
 
-    fn update(&mut self, message: Message) {
-        match message {
-            Message::ExitPressed => {
-                self.value += 1;
-            }
-            Message::IncrementPressed => {
-                todo!("// ! TODO: Handle exit app...!")
-            }
-        }
+    fn update(&mut self, _message: ()) -> Command<()> {
+        Command::none()
     }
 
-    fn view(&mut self) -> Element<Message> {
-        Column::new()
-            .padding(20)
-            .align_items(Alignment::Center)
-            .push(
-                Button::new(&mut self.exit_button, Text::new("Increment"))
-                    .on_press(Message::ExitPressed),
-            )
-            .push(Text::new(format!("The `iced-rs` content focused browser, value: {}", self.value.to_string())).size(50))
-            .push(
-                Button::new(&mut self.increment_pressed, Text::new("Quit"))
-                    .on_press(Message::IncrementPressed),
-            )
-            .into()
+    fn view(&mut self) -> Element<()> {
+        parse_dom(HTML).expect("parse_dom failed")
+    }
+
+    fn new(_: Self::Flags) -> (Self, Command<Self::Message>) {
+        (Counter {}, Command::none())
     }
 }
 
 fn main() -> Result<(), iced::Error> {
-    Counter::run(iced::Settings::default())
+    let mut settings = iced::Settings::default();
+
+    settings.window.resizable = true;
+    settings.window.size = (600, 400);
+
+    Counter::run(settings)
 }
