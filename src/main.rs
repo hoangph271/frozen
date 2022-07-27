@@ -22,7 +22,7 @@ impl Sandbox for Counter {
     }
 
     fn title(&self) -> String {
-        String::from("Rusted Content")
+        String::from("Frozen")
     }
 
     fn update(&mut self, message: Message) {
@@ -44,9 +44,9 @@ impl Sandbox for Counter {
                 Button::new(&mut self.exit_button, Text::new("Increment"))
                     .on_press(Message::ExitPressed),
             )
-            .push(Text::new(format!("`RC` - The `iced-rs` content focus browser, value: {}", self.value.to_string())).size(50))
+            .push(Text::new(format!("The `iced-rs` content focused browser, value: {}", self.value.to_string())).size(50))
             .push(
-                Button::new(&mut self.increment_pressed, Text::new("Exit app"))
+                Button::new(&mut self.increment_pressed, Text::new("Quit"))
                     .on_press(Message::IncrementPressed),
             )
             .into()
