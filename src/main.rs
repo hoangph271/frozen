@@ -1,11 +1,13 @@
 use iced::button::{self, Button};
 use iced::{Alignment, Column, Element, Sandbox, Text};
 
+mod lib;
+
 #[derive(Default)]
 struct Counter {
     value: i32,
     exit_button: button::State,
-    increment_pressed: button::State
+    increment_pressed: button::State,
 }
 
 #[derive(Debug, Clone, Copy)]
@@ -44,7 +46,13 @@ impl Sandbox for Counter {
                 Button::new(&mut self.exit_button, Text::new("Increment"))
                     .on_press(Message::ExitPressed),
             )
-            .push(Text::new(format!("`RC` - The `iced-rs` content focus browser, value: {}", self.value.to_string())).size(50))
+            .push(
+                Text::new(format!(
+                    "`RC` - The `iced-rs` content focus browser, value: {}",
+                    self.value
+                ))
+                .size(50),
+            )
             .push(
                 Button::new(&mut self.increment_pressed, Text::new("Exit app"))
                     .on_press(Message::IncrementPressed),
