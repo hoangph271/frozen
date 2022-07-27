@@ -1,36 +1,81 @@
-use html_parser::{Dom, DomVariant};
-use iced::{Column, Element as IcedElement, Row};
+use html_parser::{Dom, DomVariant, Node};
+use iced::{Column, Element as IcedElement, Row, Text};
 
-pub fn dom_to_element<'a, T: 'a>(dom: &Dom) -> Option<Vec<IcedElement<'a, T>>> {
+fn node_to_element(node: Node) -> Option<IcedElement<'static, ()>> {
+    match node {
+        html_parser::Node::Element(element) => match element.name.as_str() {
+            "div" => {
+                let mut col = Row::new();
+
+                let children = element
+                    .children
+                    .iter()
+                    .filter_map(|child| node_to_element(child.clone()));
+
+                for child in children {
+                    col = col.push(child);
+                }
+
+                let col: IcedElement<()> = col.into();
+                Some(col)
+            }
+            "h4" => {
+                let mut col = Row::new();
+
+                let children = element
+                    .children
+                    .iter()
+                    .filter_map(|child| node_to_element(child.clone()));
+
+                for child in children {
+                    col = col.push(child);
+                }
+
+                let col: IcedElement<()> = col.into();
+                Some(col)
+            }
+            "quote" => {
+                let mut col = Row::new();
+
+                let children = element
+                    .children
+                    .iter()
+                    .filter_map(|child| node_to_element(child.clone()));
+
+                for child in children {
+                    col = col.push(child);
+                }
+
+                let col: IcedElement<()> = col.into();
+                Some(col)
+            }
+            _ => {
+                todo!("element NOT matched: {:?}", element.name);
+            }
+        },
+        html_parser::Node::Text(content) => {
+            let text = Text::new(content).size(16);
+
+            let text: IcedElement<()> = text.into();
+            Some(text)
+        }
+        _ => {
+            todo!("node NOT matched: {:?}", node);
+        }
+    }
+}
+fn dom_to_element(dom: Dom) -> Option<Vec<IcedElement<'static, ()>>> {
     match dom.tree_type {
         DomVariant::DocumentFragment => {
             let children = dom
                 .children
                 .iter()
-                .map(|node| match node {
-                    html_parser::Node::Element(element) => match element.name.as_str() {
-                        "div" => {
-                            let col = Column::new();
-                            let col: IcedElement<T> = col.into();
-
-                            col
-                        }
-                        _ => {
-                            todo!("element NOT matched: {:?}", element.name);
-                        }
-                    },
-                    _ => {
-                        todo!("node NOT matched: {:?}", node);
-                    }
-                })
-                .collect::<Vec<IcedElement<'a, T>>>();
+                .filter_map(|child| node_to_element(child.clone()))
+                .collect::<Vec<IcedElement<()>>>();
 
             Some(children)
         }
-        DomVariant::Empty => {
-            println!("{:?}", dom);
-            None
-        }
+        DomVariant::Empty => None,
         _ => {
             todo!("dom_to_element NOT matched: {:?}", dom.tree_type);
         }
@@ -38,15 +83,15 @@ pub fn dom_to_element<'a, T: 'a>(dom: &Dom) -> Option<Vec<IcedElement<'a, T>>> {
 }
 
 #[allow(dead_code)]
-pub fn parse_dom<'a, T: 'a>(html: &str) -> Result<IcedElement<'a, T>, html_parser::Error> {
-    let container = Row::new();
-    let dom = Dom::parse(html)?;
+pub fn parse_dom(html: &str) -> Result<IcedElement<()>, html_parser::Error> {
+    let mut container = Column::new();
+    let children = {
+        let dom = Dom::parse(html)?;
+        dom_to_element(dom).unwrap_or_default()
+    };
 
-    if let Some(_children) = dom_to_element::<()>(&dom) {
-        // TODO: children
-        // for child_el in root_el {
-        //     container.push(child_el);
-        // }
+    for child in children {
+        container = container.push(child);
     }
 
     Ok(container.into())
@@ -77,7 +122,7 @@ mod tests {
 
     #[test]
     fn test_parse_empty_dom() {
-        let dom = parse_dom::<()>("").unwrap();
+        let dom = parse_dom("").unwrap();
         let expected: Element<()> = Row::new().into();
 
         assert!(AssertWrapper(dom) == AssertWrapper(expected));
@@ -85,7 +130,7 @@ mod tests {
 
     #[test]
     fn test_dummy_app_index() {
-        let dom = parse_dom::<()>(
+        let dom = parse_dom(
             "
             <div>
                 <h4>
